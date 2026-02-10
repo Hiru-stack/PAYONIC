@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade-in" style="max-width: 1200px; margin: 0 auto; padding-top: 1rem;">
+    <!-- Back Header -->
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ url_for('admin.users') }}"
+            style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">
+            <i class="ri-arrow-left-line"></i> Back to User Console
+        </a>
+    </div>
+
+    <div class="mobile-grid-1" style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem; align-items: start;">
+        <!-- Profile Card -->
+        <div class="glass-panel" style="padding: 2rem; position: sticky; top: 1rem;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div
+                    style="width: 120px; height: 120px; border-radius: 30px; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: 800; color: white; margin: 0 auto 1.5rem; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);">
+                    {{ user.username[0]|upper }}
+                </div>
+                <h2 style="font-size: 1.75rem; margin-bottom: 0.25rem;">{{ user.username }}</h2>
+                <span class="badge-pill"
+                    style="background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border);">
+                    {{ user.role | upper }}
+                </span>
+            </div>
+
+            <div
+                style="display: flex; flex-direction: column; gap: 1.25rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; color: var(--text-muted);">
+                    <i class="ri-mail-line" style="font-size: 1.25rem;"></i>
+                    <span style="font-size: 0.95rem;">{{ user.email }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem; color: var(--text-muted);">
+                    <i class="ri-phone-line" style="font-size: 1.25rem;"></i>
+                    <span style="font-size: 0.95rem;">{{ user.phone_number or 'Unconfigured' }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem; color: var(--text-muted);">
+                    <i class="ri-calendar-line" style="font-size: 1.25rem;"></i>
+                    <span style="font-size: 0.95rem;">ID: #{{ "%04d"|format(user.id) }}</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                <form action="{{ url_for('admin.reset_password', id=user.id) }}" method="POST">
+                    <button type="submit" class="btn btn-outline"
+                        style="width: 100%; border-radius: 1rem; color: var(--warning); border-color: rgba(245, 158, 11, 0.2);">
+                        <i class="ri-key-line"></i> Reset Password
+                    </button>
+                </form>
+                <form action="{{ url_for('admin.toggle_status', id=user.id) }}" method="POST">
+                    <button type="submit" class="btn btn-outline"
+                        style="width: 100%; border-radius: 1rem; color: var(--danger); border-color: rgba(239, 68, 68, 0.2);">
+                        <i class="ri-user-forbid-line"></i> Suspend User
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Detailed Info -->
+        <div>
+            <!-- Financial Overview -->
+            <div class="mobile-grid-1"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="glass-panel" style="padding: 1.5rem;">
+                    <div
+                        style="color: var(--text-dim); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">
+                        Wallet Balance
+                    </div>
+                    <div
+                        style="font-size: 2.5rem; font-weight: 800; color: var(--success); display: flex; align-items: baseline; gap: 0.5rem;">
+                        <span style="font-size: 1.25rem; font-weight: 600;">LKR</span>
+                        {{ "{:,.2f}".format(user.wallet.balance if user.wallet else 0) }}
+                    </div>
+                </div>
+                <div class="glass-panel" style="padding: 1.5rem;">
+                    <div
+                        style="color: var(--text-dim); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem;">
+                        Transaction Volume
+                    </div>
+                    <div
+                        style="font-size: 2.5rem; font-weight: 800; color: var(--primary); display: flex; align-items: baseline; gap: 0.5rem;">
+                        {{ transactions|length }}
+                        <span style="font-size: 1rem; font-weight: 600; color: var(--text-dim);">Historical
+                            Operations</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Audit Trail -->
+            <div class="glass-panel" style="padding: 0; overflow: hidden;">
+                <div
+                    style="padding: 1.5rem 2.5rem; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin-bottom: 0; font-size: 1.25rem;">Recent Audit Logs</h3>
+                    <div style="font-size: 0.8rem; color: var(--text-dim);">Showing last 50 entries</div>
+                </div>
+                <div class="table-container">
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th style="padding-left: 1.5rem;">Operation</th>
+                                <th>Entity</th>
+                                <th class="mobile-hide">Category</th>
+                                <th>Amount</th>
+                                <th style="text-align: right; padding-right: 1.5rem;">Artifact Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in transactions %}
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                <td style="padding-left: 2.5rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        {% if t.sender_id == user.id %}
+                                        <div
+                                            style="width: 32px; height: 32px; border-radius: 8px; background: rgba(239, 68, 68, 0.1); color: var(--danger); display: flex; align-items: center; justify-content: center;">
+                                            <i class="ri-arrow-right-up-line"></i>
+                                        </div>
+                                        <span>Disbursement</span>
+                                        {% else %}
+                                        <div
+                                            style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.1); color: var(--success); display: flex; align-items: center; justify-content: center;">
+                                            <i class="ri-arrow-left-down-line"></i>
+                                        </div>
+                                        <span>Acquisition</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if t.sender_id == user.id %}
+                                    <span style="color: var(--text-muted);">To:</span> {{ t.receiver.username }}
+                                    {% else %}
+                                    <span style="color: var(--text-muted);">From:</span> {{ t.sender.username }}
+                                    {% endif %}
+                                </td>
+                                <td class="mobile-hide">
+                                    <span class="badge-pill"
+                                        style="font-size: 0.7rem; background: rgba(255,255,255,0.05);">{{ t.category or
+                                        'General' }}</span>
+                                </td>
+                                <td
+                                    style="font-weight: 700; color: {{ 'var(--danger)' if t.sender_id == user.id else 'var(--success)' }}">
+                                    {{ '-' if t.sender_id == user.id else '+' }} LKR {{ "{:,.2f}".format(t.amount) }}
+                                </td>
+                                <td
+                                    style="text-align: right; padding-right: 2.5rem; color: var(--text-dim); font-size: 0.85rem;">
+                                    {{ t.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if not transactions %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 4rem; color: var(--text-dim);">No
+                                    operational history detected for this entity.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

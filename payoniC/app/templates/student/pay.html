@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="centered-layout" style="align-items: flex-start; padding-top: 4rem;">
+    <div class="glass-panel" style="max-width: 500px; width: 100%; padding: 0; overflow: hidden;">
+        <div style="padding: 1.5rem; text-align: center; border-bottom: 1px solid var(--border);">
+            <h2 class="text-gradient" style="margin: 0;">Scan & Pay</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Scan a vendor's QR code or enter it manually.</p>
+        </div>
+
+        <div style="padding: 1.5rem;">
+            <!-- QR Scanner Viewport -->
+            <div id="reader"
+                style="width: 100%; border-radius: 12px; overflow: hidden; background: #000; margin-bottom: 1.5rem; border: 2px solid var(--border);">
+            </div>
+
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <p
+                    style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                    Or enter manually</p>
+            </div>
+
+            <form action="{{ url_for('main.pay') }}" method="get" id="manual-form">
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" name="code" class="form-control" placeholder="Enter 6-digit Code" required
+                        style="flex: 1; text-align: center; letter-spacing: 0.1em; font-weight: bold;">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="ri-arrow-right-line"></i>
+                    </button>
+                </div>
+            </form>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function onScanSuccess(decodedText, decodedResult) {
+        // Handle the scanned code
+        console.log(`Code matched = ${decodedText}`, decodedResult);
+        html5QrcodeScanner.clear();
+        window.location.href = "{{ url_for('main.pay') }}?code=" + encodeURIComponent(decodedText);
+    }
+
+    function onScanFailure(error) {
+        // console.warn(`Code scan error = ${error}`);
+    }
+
+    // Check if secure context
+    if (window.isSecureContext) {
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            false);
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    } else {
+        document.getElementById('reader').innerHTML = `
+            <div style="padding: 2rem; color: #ef4444; background: rgba(239, 68, 68, 0.1); border-radius: 8px; margin: 1rem;">
+                <i class="ri-error-warning-line" style="font-size: 2rem;"></i>
+                <p style="margin-top: 1rem; font-weight: 500;">Camera access requires HTTPS</p>
+                <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.8;">
+                    Modern browsers only allow camera access over secure (HTTPS) connections. 
+                    Please use the 6-digit numeric code below instead.
+                </p>
+            </div>
+        `;
+    }
+</script>
+{% endblock %}

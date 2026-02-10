@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+        <div>
+            <h1 class="text-gradient" style="font-size: 2.25rem; font-weight: 800;">Executive Overview</h1>
+            <p style="color: var(--text-dim); font-size: 1.05rem;">Real-time system health and transaction monitoring
+            </p>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <div class="glass-panel"
+                style="padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.75rem; border-radius: 0.75rem;">
+                <div
+                    style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success);">
+                </div>
+                <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">System Operational</span>
+            </div>
+            <button class="btn btn-primary" style="box-shadow: var(--shadow-neon);">
+                <i class="ri-download-2-line"></i> Export Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Command Ribbon Section -->
+    <div class="status-ribbon">
+        <!-- Action Required Card -->
+        <div class="command-card action-required animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="command-info">
+                <h4>System Operations</h4>
+                <div class="pulse-glow">
+                    {% set pending_count = total_pending_actions if total_pending_actions is defined else 0 %}
+                    <div class="pulse-dot"
+                        style="background: {{ 'var(--secondary)' if pending_count > 0 else 'var(--text-dim)' }}; animation: {{ 'pulse 2s infinite' if pending_count > 0 else 'none' }};">
+                    </div>
+                    <span class="command-value" style="color: white; font-weight: 800; font-size: 1.75rem;">Action
+                        Required: {{ pending_count }}</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <a href="{{ url_for('admin.requests') }}" class="btn btn-primary"
+                    style="padding: 0.7rem 1.25rem; font-size: 0.85rem; background: var(--secondary); box-shadow: var(--shadow-neon-pink);">
+                    Funds Approval
+                </a>
+                <a href="{{ url_for('admin.pending_vendors') }}" class="btn btn-outline"
+                    style="padding: 0.7rem 1.25rem; font-size: 0.85rem; border-color: var(--secondary-glow); color: var(--secondary);">
+                    Vendor Approval
+                </a>
+            </div>
+        </div>
+
+        <!-- System Liquidity Card -->
+        <div class="command-card liquidity-status animate-fade-in" style="animation-delay: 0.2s;">
+            <div class="command-info">
+                <h4>Capital Reserves</h4>
+                <div class="command-value" style="color: white; font-weight: 800; font-size: 1.75rem;">
+                    System Liquidity <span class="text-gradient">LKR {{ "{:,.0f}".format(total_system_balance) }}</span>
+                </div>
+            </div>
+            <div class="liquidity-pill">
+                <i class="ri-bank-line"></i> Secure
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="portal-grid">
+        <!-- Left: Activity/Transactions -->
+        <div class="col-span-8 glass-panel" style="padding: 0; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h3 style="margin: 0;">Recent Transactions</h3>
+                <a href="#" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.8rem;">View All</a>
+            </div>
+
+            <div class="table-container">
+                <table style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Entitity</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in transactions[:6] %}
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div
+                                        style="width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;">
+                                        <i class="ri-arrow-right-up-line" style="color: var(--secondary);"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 0.9rem;">From {{ t.sender.username }}
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: var(--text-dim);">To {{
+                                            t.receiver.username }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="font-weight: 700; color: white;">LKR {{ "{:.2f}".format(t.amount) }}</td>
+                            <td>
+                                <span class="badge-pill"
+                                    style="background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2);">
+                                    Success
+                                </span>
+                            </td>
+                            <td style="text-align: right; color: var(--text-dim); font-size: 0.85rem;">
+                                {{ t.timestamp.strftime('%H:%M') }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right: System Insights / Activity Feed -->
+        <div class="col-span-4 glass-panel" style="padding: 2.5rem;">
+            <h3 style="margin-bottom: 2rem;">System Feed</h3>
+
+            <ul class="activity-feed">
+                <li class="activity-item">
+                    <div class="activity-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
+                        <i class="ri-user-add-line"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">New User Registration</div>
+                        <div class="activity-time">2 minutes ago</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <div class="activity-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+                        <i class="ri-refund-2-line"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">Bulk Wallet Recharge</div>
+                        <div class="activity-time">14 minutes ago</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <div class="activity-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+                        <i class="ri-alert-line"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">Verification Request</div>
+                        <div class="activity-time">1 hour ago</div>
+                    </div>
+                </li>
+                <li class="activity-item">
+                    <div class="activity-icon" style="background: rgba(139, 92, 246, 0.15); color: #a78bfa;">
+                        <i class="ri-shield-user-line"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">Security Audit Logged</div>
+                        <div class="activity-time">3 hours ago</div>
+                    </div>
+                </li>
+            </ul>
+
+            <div style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <p class="stat-label" style="font-size: 0.75rem; margin-bottom: 1rem;">System Liquidity Trace</p>
+                <div
+                    style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; display: flex;">
+                    <div style="width: 70%; background: var(--primary);"></div>
+                    <div style="width: 20%; background: var(--secondary);"></div>
+                    <div style="width: 10%; background: var(--accent);"></div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 0.75rem; font-size: 0.65rem; color: var(--text-dim);">
+                    <div style="display: flex; align-items: center; gap: 0.25rem;"><span
+                            style="width: 6px; height: 6px; border-radius: 50%; background: var(--primary);"></span>
+                        Student</div>
+                    <div style="display: flex; align-items: center; gap: 0.25rem;"><span
+                            style="width: 6px; height: 6px; border-radius: 50%; background: var(--secondary);"></span>
+                        Vendor</div>
+                    <div style="display: flex; align-items: center; gap: 0.25rem;"><span
+                            style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent);"></span>
+                        System</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <div style="margin-bottom: 2rem;">
+        <h1 class="text-gradient">Hello, {{ current_user.username }}</h1>
+        <p style="color: var(--text-muted);">Welcome to your student wallet.</p>
+    </div>
+
+    <div class="portal-grid">
+        <!-- Wallet Card -->
+        <div class="col-span-4 glass-panel stat-card" style="text-align: center; height: fit-content;">
+            <p class="stat-label">Current Balance</p>
+            <div class="stat-value" style="color: var(--success);">LKR {{ "{:.2f}".format(wallet.balance) }}</div>
+
+            <div style="display: grid; gap: 1rem; margin-top: 1.5rem;">
+                <a href="{{ url_for('main.topup') }}" class="btn btn-primary">
+                    <i class="ri-add-circle-line"></i> Recharge Funds
+                </a>
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="{{ url_for('main.pay') }}" class="btn btn-outline" style="flex: 1;">
+                        <i class="ri-qr-scan-line"></i> Scan
+                    </a>
+                </div>
+                <a href="{{ url_for('main.split_bill') }}" class="btn btn-outline"
+                    style="border-color: var(--secondary); color: var(--secondary);">
+                    <i class="ri-group-line"></i> Split Bill
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-span-8 glass-panel" style="padding: 0; overflow: hidden;">
+            <div
+                style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
+                <h3 style="margin: 0; font-size: 1.25rem;">Recent Activity</h3>
+                <a href="{{ url_for('main.reports') }}" class="btn btn-outline btn-sm"
+                    style="font-size: 0.8rem; padding: 0.4rem 1rem;">View All</a>
+            </div>
+
+            <div class="table-container" style="border: none; border-radius: 0;">
+                <table style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="padding-left: 2rem;">Date</th>
+                            <th>Description</th>
+                            <th style="text-align: right; padding-right: 2rem;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions[:8] %}
+                        <tr>
+                            <td style="color: var(--text-muted); padding-left: 2rem;">{{
+                                transaction.timestamp.strftime('%Y-%m-%d') }}</td>
+                            <td style="font-weight: 500;">{{ transaction.description }}</td>
+                            <td
+                                style="text-align: right; padding-right: 2rem; font-weight: 700; color: {{ 'var(--danger)' if transaction.sender_id == current_user.id else 'var(--success)' }}">
+                                {{ '-' if transaction.sender_id == current_user.id else '+' }}LKR {{
+                                "{:.2f}".format(transaction.amount) }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 4rem; color: var(--text-dim);">
+                                <i class="ri-history-line"
+                                    style="font-size: 3rem; display: block; margin-bottom: 1rem; opacity: 0.2;"></i>
+                                No recent transactions.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

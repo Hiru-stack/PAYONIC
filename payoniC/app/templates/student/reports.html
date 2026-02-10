@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <div class="mobile-stack"
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 class="text-gradient mobile-text-large" style="margin: 0;">Spending Report</h2>
+        <div class="mobile-text-center" style="text-align: right;">
+            <p style="color: var(--text-muted); font-size: 0.75rem; margin: 0; text-transform: uppercase;">Total Spent
+                in
+                {{ datetime(year, month, 1).strftime('%B %Y') }}</p>
+            <h3 style="color: var(--danger); font-size: clamp(1.5rem, 5vw, 2rem); margin: 0;">LKR {{
+                "{:.2f}".format(total_spent) }}</h3>
+        </div>
+    </div>
+
+    <!-- Filters and Actions -->
+    <div class="glass-panel" style="margin-bottom: 2rem; padding: 1.5rem;">
+        <form action="{{ url_for('main.reports') }}" method="get"
+            style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 150px; margin: 0;">
+                <label class="form-label" style="font-size: 0.7rem;">Month</label>
+                <select name="month" class="form-control" style="background: rgba(255,255,255,0.05); color: white;">
+                    {% for m in range(1, 13) %}
+                    <option value="{{ m }}" {{ 'selected' if m==month else '' }}>
+                        {{ datetime(2022, m, 1).strftime('%B') }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 150px; margin: 0;">
+                <label class="form-label" style="font-size: 0.7rem;">Year</label>
+                <select name="year" class="form-control" style="background: rgba(255,255,255,0.05); color: white;">
+                    {% for y in range(now.year-1, now.year+1) %}
+                    <option value="{{ y }}" {{ 'selected' if y==year else '' }}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+                <i class="ri-filter-3-line"></i> Filter
+            </button>
+            <a href="{{ url_for('main.download_statement', month=month, year=year) }}" class="btn"
+                style="background: var(--secondary); color: white; padding: 0.75rem 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="ri-download-2-line"></i> Download Statement
+            </a>
+        </form>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Chart Section -->
+        <div class="glass-panel" style="padding: 2rem;">
+            <h5 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">Spending
+                Breakdown</h5>
+            <div style="height: 300px; display: flex; justify-content: center;">
+                <canvas id="spendingChart"></canvas>
+            </div>
+        </div>
+
+        <!-- List Section -->
+        <div class="glass-panel" style="padding: 0; overflow: hidden;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border);">
+                <h5 style="margin: 0;">{{ datetime(year, month, 1).strftime('%B %Y') }} Transactions</h5>
+            </div>
+
+            <div style="max-height: 400px; overflow-y: auto;">
+                <table style="width: 100%;">
+                    <tbody>
+                        {% for t in expenses %}
+                        <tr>
+                            <td style="padding: 1rem 1.5rem;">
+                                <div style="font-weight: 600;">{{ t.description }}</div>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <span
+                                        style="font-size: 0.7rem; background: rgba(255,255,255,0.1); padding: 0.1rem 0.4rem; border-radius: 4px; color: var(--text-muted);">{{
+                                        t.category }}</span>
+                                    <small style="color: var(--text-muted);">{{ t.timestamp.strftime('%d %b %H:%M')
+                                        }}</small>
+                                </div>
+                            </td>
+                            <td style="padding: 1rem 1.5rem; text-align: right;">
+                                <span
+                                    style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 0.25rem 0.5rem; border-radius: 999px; font-size: 0.9rem;">
+                                    -LKR {{ "{:.2f}".format(t.amount) }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="2" style="text-align: center; padding: 2rem; color: var(--text-muted);">No
+                                expenses this month.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Aggregate data from Jinja
+    const expenses = [
+        {% for t in expenses %}
+    { category: "{{ t.category }}", amount: { { t.amount } } },
+    {% endfor %}
+    ];
+
+    const grouped = {};
+    expenses.forEach(e => {
+        const cat = e.category || "General";
+        if (!grouped[cat]) grouped[cat] = 0;
+        grouped[cat] += e.amount;
+    });
+
+    const labels = Object.keys(grouped);
+    const data = Object.values(grouped);
+
+    const ctx = document.getElementById('spendingChart').getContext('2d');
+
+    const myChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Spending',
+                data: data,
+                backgroundColor: [
+                    '#ec4899', /* Pink - Food? */
+                    '#8b5cf6', /* Violet - Education */
+                    '#6366f1', /* Indigo */
+                    '#10b981', /* Emerald */
+                    '#f59e0b', /* Amber */
+                    '#3b82f6', /* Blue */
+                ],
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8', font: { family: 'Outfit' } }
+                }
+            },
+            cutout: '60%'
+        }
+    });
+</script>
+{% endblock %}

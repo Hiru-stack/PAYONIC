@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade-in centered-layout" style="min-height: calc(100vh - 120px); align-items: flex-start;">
+    <div class="glass-panel" style="width: 100%; max-width: 500px; padding: 3rem;">
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+            <div
+                style="width: 60px; height: 60px; border-radius: 50%; background: rgba(139, 92, 246, 0.1); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem;">
+                <i class="ri-user-edit-line"></i>
+            </div>
+            <h1 class="text-gradient" style="font-size: 1.75rem; margin-bottom: 0.5rem;">Modify Account</h1>
+            <p style="color: var(--text-dim);">Updating credentials for <span
+                    style="color: white; font-weight: 600;">@{{ user.username }}</span></p>
+        </div>
+
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                {{ form.username(class="form-control") }}
+                {% for error in form.username.errors %}<span style="color: var(--danger); font-size: 0.8rem;">{{ error
+                    }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email Integrity</label>
+                {{ form.email(class="form-control") }}
+                {% for error in form.email.errors %}<span style="color: var(--danger); font-size: 0.8rem;">{{ error
+                    }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                <label class="form-label">System Role</label>
+                {{ form.role(class="form-control") }}
+                {% for error in form.role.errors %}<span style="color: var(--danger); font-size: 0.8rem;">{{ error
+                    }}</span>{% endfor %}
+            </div>
+
+            <div style="margin-top: 2rem;">
+                {{ form.submit(class="btn btn-primary", style="width: 100%; padding: 1rem; font-weight: 700; box-shadow:
+                var(--shadow-neon);") }}
+            </div>
+        </form>
+
+        <div style="margin-top: 2rem; text-align: center;">
+            <a href="{{ url_for('admin.users') }}" style="color: var(--text-dim); font-size: 0.9rem; font-weight: 500;">
+                <i class="ri-arrow-left-line"></i> Abort Changes
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

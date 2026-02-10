@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section animate-fade-in portal-content"
+    style="margin-top: 5rem; margin-bottom: 8rem; text-align: center; width: 100%; position: relative;">
+
+    <!-- Animated Background Element -->
+    <div
+        style="position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 300px; height: 300px; background: var(--primary-glow); filter: blur(100px); opacity: 0.3; z-index: -1;">
+    </div>
+
+    <div class="hero-badge animate-float"
+        style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--bg-card); padding: 0.6rem 1.2rem; border-radius: 2rem; border: 1px solid var(--border); margin-bottom: 2.5rem; box-shadow: var(--shadow-main);">
+        <span
+            style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); display: inline-block; box-shadow: 0 0 10px var(--success);"></span>
+        <span
+            style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">University
+            System Online</span>
+    </div>
+
+    <h1 class="hero-title mobile-text-large"
+        style="font-size: clamp(3rem, 12vw, 6rem); font-weight: 900; letter-spacing: -0.05em; margin-bottom: 1.5rem; line-height: 1.05;">
+        Tomorrow's <br><span class="text-gradient">Campus Economy</span>
+    </h1>
+    <p class="hero-subtitle"
+        style="font-size: clamp(1.1rem, 4vw, 1.4rem); max-width: 750px; margin: 0 auto 4rem; color: var(--text-muted); line-height: 1.6; font-weight: 400;">
+        Experience a unified, high-performance digital wallet designed for the next generation of academic ecosystems.
+        Secure. Instant. Universal.
+    </p>
+
+    <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+        {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-glow"
+            style="padding: 1.25rem 3.5rem; font-size: 1.15rem; border-radius: 1.5rem;">
+            Initialize Wallet
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline"
+            style="padding: 1.25rem 3.5rem; font-size: 1.15rem; border-radius: 1.5rem;">
+            Access Portal
+        </a>
+        {% else %}
+        <a href="{{ url_for('main.dashboard') if current_user.role == 'student' else (url_for('vendor.dashboard') if current_user.role == 'vendor' else url_for('admin.dashboard')) }}"
+            class="btn btn-glow" style="padding: 1.25rem 3.5rem; font-size: 1.15rem; border-radius: 1.5rem;">
+            Return to Core Dashboard
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Floating Graphic Circle -->
+    <div class="logo-circle animate-float"
+        style="margin-top: 6rem; width: 120px; height: 120px; background: var(--bg-card); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: auto; margin-right: auto; border: 1px solid var(--border); box-shadow: var(--shadow-neon);">
+        <img src="{{ url_for('static', filename='img/payonic_logo.png') }}"
+            style="width: 60%; height: auto; filter: drop-shadow(0 0 10px var(--primary-glow));">
+    </div>
+</div>
+
+<!-- Features Section -->
+<section id="features" class="balanced-section reveal">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: clamp(2rem, 6vw, 3rem); margin-bottom: 1rem; letter-spacing: -0.03em;">Core Specialized
+            Features</h2>
+        <p style="color: var(--text-dim); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Advanced modules
+            tailored for every stakeholder in the university ecosystem.</p>
+    </div>
+
+    <div class="feature-carousel reveal" style="max-width: 1200px; margin: 0 auto;">
+        <!-- Student Card -->
+        <div class="glass-panel feature-card">
+            <div class="feature-icon-wrapper" style="color: var(--primary);">
+                <i class="ri-user-smile-line"></i>
+            </div>
+            <h3 style="margin-bottom: 1.5rem;">Student-Centric</h3>
+            <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1.25rem;">
+                <li>
+                    <strong style="display: block; color: var(--text-main);">Low Balance Alerts</strong>
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Automated notifications to ensure you're
+                        never stuck at a canteen counter.</span>
+                </li>
+                <li>
+                    <strong style="display: block; color: var(--text-main);">Refund Management</strong>
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">A structured module to track and request
+                        refunds for cancelled events or overpayments.</span>
+                </li>
+                <li>
+                    <strong style="display: block; color: var(--text-main);">Intelligent Budgeting</strong>
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Set spending limits for categories like
+                        "Canteen" or "Clubs" directly in your dashboard.</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Admin Card -->
+        <div class="glass-panel feature-card" style="border-color: var(--accent-glow);">
+            <div class="feature-icon-wrapper" style="color: var(--accent);">
+                <i class="ri-settings-5-line"></i>
+            </div>
+            <h3 style="margin-bottom: 1.5rem;">Admin & Vendor Tools</h3>
+            <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1.25rem;">
+                <li>
+                    <strong style="display: block; color: var(--text-main);">Bulk Fee Uploads</strong>
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Administration can upload CSV files to
+                        bill entire batches for tuition simultaneously.</span>
+                </li>
+                <li>
+                    <strong style="display: block; color: var(--text-main);">Settlement Dashboard</strong>
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Dedicated view for vendors to monitor
+                        when digital earnings settle into bank accounts.</span>
+                </li>
+                <li>
+                    <strong style="display: block; color: var(--text-main);">Offline Verification</strong>
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Digital receipt verification that works
+                        even if the vendor's internet is unstable.</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Security Card -->
+        <div class="glass-panel feature-card" style="border-color: var(--secondary-glow);">
+            <div class="feature-icon-wrapper" style="color: var(--secondary);">
+                <i class="ri-shield-flash-line"></i>
+            </div>
+            <h3 style="margin-bottom: 1.5rem;">Security & Tech</h3>
+            <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1.25rem;">
+                <li>
+                    <strong style="display: block; color: var(--text-main);">Advanced 2FA</strong>
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Email or SMS code verification required
+                        for all high-value transactions.</span>
+                </li>
+                <li>
+                    <strong style="display: block; color: var(--text-main);">NFC Support</strong>
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Seamless tap-to-pay alternative to QR
+                        codes for faster high-traffic lines.</span>
+                </li>
+                <li>
+                    <strong style="display: block; color: var(--text-main);">JWT Hashing</strong>
+                    <span style="font-size: 0.9rem; color: var(--text-muted);">Enterprise-grade encryption and
+                        tokenization for every session.</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- Guidelines Section -->
+<section id="guidelines" class="reveal" style="padding: 4rem 0; border-top: 1px solid var(--border);">
+    <div class="mobile-grid-1" style="display: grid; grid-template-columns: 1fr 2fr; gap: 3rem;">
+        <div>
+            <h2 style="font-size: 2.2rem; margin-bottom: 1.5rem;">Technical <br><span
+                    class="text-gradient">Guidelines</span></h2>
+            <p style="color: var(--text-dim); margin-bottom: 2rem;">Adherence to enterprise standards ensuring a
+                scalable and secure 15-week development lifecycle.</p>
+            <div class="glass-panel" style="padding: 1.5rem; font-size: 0.9rem; border-color: var(--primary-glow);">
+                <i class="ri-code-s-slash-line" style="color: var(--primary);"></i> Built with Flask, SQLAlchemy &
+                Modern JS.
+            </div>
+        </div>
+
+        <div class="guidelines-grid">
+            <div class="guideline-item">
+                <div class="guideline-title">1. Data Architecture</div>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Strict database normalization to avoid
+                    redundancy and comprehensive audit logs for all administrative balance modifications.</p>
+            </div>
+            <div class="guideline-item" style="border-color: var(--secondary);">
+                <div class="guideline-title">2. UI/UX Paradigm</div>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">To ensure a responsive and centered UI, I
+                    implemented a max-width container strategy using Bootstrap’s grid system. This ensures that the hero
+                    section remains horizontally centered across all screen resolutions by utilizing margin: 0 auto; or
+                    the .container class.</p>
+            </div>
+            <div class="guideline-item" style="border-color: var(--accent);">
+                <div class="guideline-title">3. Security Standards</div>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Role-based access control (RBAC) on every
+                    endpoint and secured environment variables for all sensitive credentials.</p>
+            </div>
+            <div class="guideline-item" style="border-color: #fff;">
+                <div class="guideline-title">4. Verification Strategy</div>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Peak-hour stress testing and edge-case
+                    simulation for network interruptions during transaction processing.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Admin Portal Section -->
+<section id="admin-access" class="reveal"
+    style="padding: 6rem 0; border-top: 1px solid var(--border); text-align: center;">
+    <div class="glass-panel"
+        style="max-width: 600px; margin: 0 auto; padding: 3rem; border: 1px dashed var(--accent-glow);">
+        <h3 style="margin-bottom: 1rem; color: var(--accent);">System Governance</h3>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Authorized personnel only. Access the central
+            administrative directive console.</p>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn"
+            style="background: rgba(139, 92, 246, 0.1); color: var(--accent); border: 1px solid var(--accent-glow); padding: 0.75rem 2rem; border-radius: 2rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <i class="ri-shield-keyhole-line"></i> Admin Portal
+        </a>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<div class="glass-panel mobile-p-1 reveal"
+    style="margin: 3rem auto; max-width: 900px; padding: 4rem 2rem; text-align: center; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));">
+    <h2 style="margin-bottom: 1rem; font-size: clamp(1.5rem, 6vw, 2.5rem);">Ready for the Future of Campus Payments?
+    </h2>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Join the growing ecosystem of students and vendors at
+        Payonic.</p>
+    <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="padding: 1rem 3rem;">Get Started Now</a>
+</div>
+{% endblock %}

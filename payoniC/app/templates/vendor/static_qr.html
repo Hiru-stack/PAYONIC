@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade-in" style="max-width: 800px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 class="text-gradient">Static QR Code</h1>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">Your permanent payment QR code</p>
+    </div>
+
+    <div class="glass-panel" style="text-align: center; padding: 3rem;">
+        <!-- Merchant Info -->
+        <div style="margin-bottom: 2rem;">
+            <div
+                style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+                Merchant ID
+            </div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">
+                {{ merchant_id }}
+            </div>
+        </div>
+
+        <!-- QR Code Display -->
+        <div
+            style="background: white; padding: 2rem; border-radius: 16px; margin: 2rem auto; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
+            <img src="data:image/png;base64,{{ qr_image }}" alt="Static QR Code"
+                style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+        </div>
+
+        <!-- Instructions -->
+        <div
+            style="background: rgba(99, 102, 241, 0.1); border-left: 4px solid var(--primary); padding: 1.5rem; margin: 2rem 0; text-align: left; border-radius: 8px;">
+            <h5 style="margin: 0 0 1rem 0; color: var(--primary);">
+                <i class="ri-information-line"></i> How to Use
+            </h5>
+            <div style="color: var(--text-secondary); line-height: 1.6;">
+                <p style="margin: 0 0 0.5rem 0;"><strong>1.</strong> Print or display this QR code at your counter</p>
+                <p style="margin: 0 0 0.5rem 0;"><strong>2.</strong> Students scan this code to identify your store</p>
+                <p style="margin: 0 0 0.5rem 0;"><strong>3.</strong> They enter the payment amount</p>
+                <p style="margin: 0;"><strong>4.</strong> You'll see instant notification on your dashboard</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button onclick="downloadQR()" class="btn btn-primary" style="flex: 1;">
+                <i class="ri-download-line"></i> Download QR Code
+            </button>
+            <a href="{{ url_for('vendor.dashboard') }}" class="btn btn-secondary" style="flex: 1;">
+                <i class="ri-arrow-left-line"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <!-- QR Payload Info (for debugging) -->
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+            <details>
+                <summary style="cursor: pointer; color: var(--text-muted); font-size: 0.875rem;">Technical Details
+                </summary>
+                <div
+                    style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; font-family: monospace; font-size: 0.875rem; word-break: break-all;">
+                    Payload: {{ qr_payload }}
+                </div>
+            </details>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function downloadQR() {
+        const img = document.querySelector('img[alt="Static QR Code"]');
+        const link = document.createElement('a');
+        link.download = 'merchant-qr-{{ merchant_id }}.png';
+        link.href = img.src;
+        link.click();
+
+        // Show feedback
+        const btn = event.target.closest('button');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="ri-check-line"></i> Downloaded!';
+        btn.style.background = 'var(--success)';
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+            btn.style.background = '';
+        }, 2000);
+    }
+</script>
+{% endblock %}

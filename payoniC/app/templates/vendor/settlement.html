@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <div style="margin-bottom: 2.5rem;">
+        <h1 class="text-gradient">Settlement & Payouts</h1>
+        <p style="color: var(--text-dim);">Manage your bank accounts and claim your earnings.</p>
+    </div>
+
+    <div class="portal-grid">
+        <!-- Bank Details Section -->
+        <div class="col-span-6 glass-panel" style="padding: 2.5rem;">
+            <h3 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;">
+                <i class="ri-bank-line" style="color: var(--primary);"></i> Bank Identity
+            </h3>
+            <form method="POST" action="">
+                {{ bank_form.hidden_tag() }}
+                <div style="display: grid; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label">{{ bank_form.bank_name.label }}</label>
+                        {{ bank_form.bank_name(class="form-control", placeholder="e.g. Bank of Ceylon") }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ bank_form.account_number.label }}</label>
+                        {{ bank_form.account_number(class="form-control", placeholder="e.g. 0081234567") }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">{{ bank_form.account_holder_name.label }}</label>
+                        {{ bank_form.account_holder_name(class="form-control", placeholder="Name as per bank records")
+                        }}
+                    </div>
+                    {{ bank_form.submit(class="btn btn-primary", style="width: 100%; margin-top: 1rem;") }}
+                </div>
+            </form>
+        </div>
+
+        <!-- Claim Earnings Section -->
+        <div class="col-span-6 glass-panel" style="padding: 2.5rem;">
+            <h3 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;">
+                <i class="ri-hand-coin-line" style="color: var(--secondary);"></i> Claim Earnings
+            </h3>
+            <div
+                style="margin-bottom: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 1rem; border: 1px solid var(--border);">
+                <p class="stat-label">Available for Payout</p>
+                <div class="stat-value" style="color: var(--success); font-size: 2rem;">LKR {{
+                    "{:.2f}".format(current_user.wallet.balance) }}</div>
+            </div>
+
+            <form method="POST" action="">
+                {{ payout_form.hidden_tag() }}
+                <div style="display: grid; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label">{{ payout_form.amount.label }}</label>
+                        {{ payout_form.amount(class="form-control", placeholder="Enter amount to claim") }}
+                    </div>
+                    {{ payout_form.submit(class="btn btn-secondary", style="width: 100%; box-shadow:
+                    var(--shadow-neon-pink);") }}
+                </div>
+                <p style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-dim); text-align: center;">
+                    <i class="ri-information-line"></i> Claims are typically processed by the administrator within 24-48
+                    hours.
+                </p>
+            </form>
+        </div>
+
+        <!-- Payout History -->
+        <div class="col-span-12 glass-panel" style="margin-top: 1rem; padding: 0; overflow: hidden;">
+            <div
+                style="padding: 1.5rem 2.5rem; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02);">
+                <h3 style="margin: 0; font-size: 1.25rem;">Payout History</h3>
+            </div>
+            <div class="table-container">
+                <table style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="padding-left: 2.5rem;">Date</th>
+                            <th>Amount</th>
+                            <th>Bank Account</th>
+                            <th>Status</th>
+                            <th style="text-align: right; padding-right: 2.5rem;">Processed At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in payouts %}
+                        <tr>
+                            <td style="padding-left: 2.5rem; color: var(--text-muted);">{{
+                                p.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td style="font-weight: 700; color: white;">LKR {{ "{:.2f}".format(p.amount) }}</td>
+                            <td>
+                                <div style="font-size: 0.9rem;">{{ p.bank_name }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-dim);">{{ p.account_number }}</div>
+                            </td>
+                            <td>
+                                <span class="badge-pill"
+                                    style="
+                                    background: {{ 'rgba(245, 158, 11, 0.1)' if p.status == 'pending' else ('rgba(16, 185, 129, 0.1)' if p.status == 'approved' else 'rgba(239, 68, 68, 0.1)') }}; 
+                                    color: {{ 'var(--warning)' if p.status == 'pending' else ('var(--success)' if p.status == 'approved' else 'var(--danger)') }};
+                                    border: 1px solid {{ 'rgba(245, 158, 11, 0.2)' if p.status == 'pending' else ('rgba(16, 185, 129, 0.2)' if p.status == 'approved' else 'rgba(239, 68, 68, 0.2)') }};">
+                                    {{ p.status|capitalize }}
+                                </span>
+                            </td>
+                            <td
+                                style="text-align: right; padding-right: 2.5rem; color: var(--text-dim); font-size: 0.85rem;">
+                                {{ p.reviewed_at.strftime('%Y-%m-%d %H:%M') if p.reviewed_at else '---' }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 4rem; color: var(--text-dim);">
+                                No payout requests found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

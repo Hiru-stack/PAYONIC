@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Header Page -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem;">
+        <div>
+            <div
+                style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">
+                <i class="ri-shield-check-line"></i> Verification Queue
+            </div>
+            <h1 class="text-gradient" style="font-size: 2.25rem;">Approval Center</h1>
+            <p style="color: var(--text-dim);">Verify and authorize pending financial transactions</p>
+        </div>
+
+        <div class="glass-panel"
+            style="padding: 0.75rem 1.25rem; border-radius: 1rem; display: flex; align-items: center; gap: 1.5rem;">
+            <div style="text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.25rem;">Pending</div>
+                <div style="font-weight: 700; color: var(--warning);">{{ requests|length }}</div>
+            </div>
+            <div style="width: 1px; height: 24px; background: var(--border);"></div>
+            <div style="text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.25rem;">Avg. Time</div>
+                <div style="font-weight: 700; color: var(--success);">12m</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="glass-panel" style="overflow: hidden; padding: 0;">
+        <div
+            style="padding: 1.5rem 2.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 600;">
+                    <i class="ri-filter-3-line text-dim"></i> Filter: <span style="color: white;">All Requests</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 600;">
+                    <i class="ri-sort-desc text-dim"></i> Sort: <span style="color: white;">Newest</span>
+                </div>
+            </div>
+            <div style="color: var(--text-dim); font-size: 0.8rem;">Showing {{ requests|length }} entries</div>
+        </div>
+
+        <div class="table-container">
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="padding-left: 2.5rem;">Time Posted</th>
+                        <th>User Account</th>
+                        <th>Amount Requested</th>
+                        <th>Risk Status</th>
+                        <th style="text-align: right; padding-right: 2.5rem;">Executive Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr style="transition: all 0.2s;" onmouseover="this.style.background='rgba(99, 102, 241, 0.03)'"
+                        onmouseout="this.style.background='transparent'">
+                        <td style="padding-left: 2.5rem;">
+                            <div style="font-weight: 500;">{{ req.created_at.strftime('%H:%M') }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-dim);">{{ req.created_at.strftime('%d %b
+                                %Y') }}</div>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div
+                                    style="width: 36px; height: 36px; border-radius: 10px; background: rgba(99, 102, 241, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 800;">
+                                    {{ req.user.username[0]|upper }}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600;">{{ req.user.username }}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-dim);">Balance: LKR {{
+                                        "{:.0f}".format(req.user.wallet.balance) }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 800; color: white; font-size: 1.15rem;">LKR {{
+                                "{:.2f}".format(req.amount) }}</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Direct
+                                Recharge</div>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span
+                                    style="width: 10px; height: 10px; border-radius: 50%; background: var(--success);"></span>
+                                <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Low
+                                    Risk</span>
+                            </div>
+                        </td>
+                        <td style="text-align: right; padding-right: 2.5rem;">
+                            <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                                <form action="{{ url_for('admin.approve_request', id=req.id) }}" method="post"
+                                    style="display: inline;">
+                                    <button type="submit" class="btn"
+                                        style="background: var(--success); color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 700;">
+                                        Approve
+                                    </button>
+                                </form>
+                                <form action="{{ url_for('admin.reject_request', id=req.id) }}" method="post"
+                                    style="display: inline;">
+                                    <button type="submit" class="btn"
+                                        style="background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600;">
+                                        Reject
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 6rem 2rem;">
+                            <div style="font-size: 4rem; opacity: 0.1; color: var(--primary); margin-bottom: 1.5rem;">
+                                <i class="ri-checkbox-multiple-line"></i>
+                            </div>
+                            <h2 style="color: var(--text-dim); font-weight: 800; margin-bottom: 0.5rem;">Queue is Empty
+                            </h2>
+                            <p style="color: var(--text-muted); font-size: 1.1rem;">All recharge requests have been
+                                processed successfully.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

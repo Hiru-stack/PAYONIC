@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title if title else "Payonic" }} | Digital Campus Payments</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+  <!-- PWA & Mobile Meta -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Payonic">
+  <link rel="apple-touch-icon" href="/static/img/icon-192.png">
+</head>
+
+<body>
+  {% set is_portal = current_user.is_authenticated %}
+
+  <div class="{{ 'portal-layout' if is_portal else 'landing-layout' }}">
+    {% if is_portal %}
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <a href="{{ url_for('main.index') }}" class="nav-brand">
+          <img src="{{ url_for('static', filename='img/payonic_logo.png') }}" alt="Payonic Logo">
+          <span class="text-gradient">Payonic</span>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">Main Menu</div>
+        <a href="{{ url_for('main.dashboard' if current_user.role == 'student' else ('vendor.dashboard' if current_user.role == 'vendor' else 'admin.dashboard')) }}"
+          class="sidebar-link {{ 'active' if request.endpoint in ['main.dashboard', 'vendor.dashboard', 'admin.dashboard'] }}">
+          <i class="ri-dashboard-line"></i> Dashboard
+        </a>
+
+        {% if current_user.role == 'student' %}
+        <a href="{{ url_for('main.pay') }}" class="sidebar-link {{ 'active' if request.endpoint == 'main.pay' }}">
+          <i class="ri-qr-scan-2-line"></i> Pay Vendor
+        </a>
+        <a href="{{ url_for('main.topup') }}" class="sidebar-link {{ 'active' if request.endpoint == 'main.topup' }}">
+          <i class="ri-wallet-3-line"></i> Recharge Wallet
+        </a>
+        <a href="{{ url_for('main.split_bill') }}"
+          class="sidebar-link {{ 'active' if request.endpoint == 'main.split_bill' }}">
+          <i class="ri-group-line"></i> Split Bill
+        </a>
+        <a href="{{ url_for('main.reports') }}"
+          class="sidebar-link {{ 'active' if request.endpoint == 'main.reports' }}">
+          <i class="ri-bar-chart-box-line"></i> Spending Reports
+        </a>
+        {% endif %}
+
+        {% if current_user.role == 'vendor' %}
+        <a href="{{ url_for('vendor.generate_qr') }}"
+          class="sidebar-link {{ 'active' if request.endpoint == 'vendor.generate_qr' }}">
+          <i class="ri-qr-code-line"></i> My QR Code
+        </a>
+        <a href="{{ url_for('vendor.dashboard') }}"
+          class="sidebar-link {{ 'active' if request.endpoint == 'vendor.dashboard' and not request.query_string }}">
+          <i class="ri-history-line"></i> Sales History
+        </a>
+        <a href="{{ url_for('vendor.settlement') }}"
+          class="sidebar-link {{ 'active' if request.endpoint == 'vendor.settlement' }}">
+          <i class="ri-bank-card-line"></i> Settlement
+        </a>
+        {% endif %}
+
+        {% if current_user.role == 'admin' %}
+        <div class="nav-section">Operations</div>
+        <a href="{{ url_for('admin.users') }}" class="sidebar-link {{ 'active' if request.endpoint == 'admin.users' }}">
+          <i class="ri-user-settings-line"></i> User Management
+        </a>
+        <a href="{{ url_for('admin.requests') }}"
+          class="sidebar-link {{ 'active' if request.endpoint == 'admin.requests' }}">
+          <i class="ri-checkbox-circle-line"></i> Funds Approval
+        </a>
+        <a href="{{ url_for('admin.manage_scheduled_topups') }}"
+          class="sidebar-link {{ 'active' if request.endpoint == 'admin.manage_scheduled_topups' }}">
+          <i class="ri-calendar-check-line"></i> Scheduled Top-ups
+        </a>
+        <a href="{{ url_for('admin.payouts') }}"
+          class="sidebar-link {{ 'active' if request.endpoint == 'admin.payouts' }}">
+          <i class="ri-hand-coin-line"></i> Payout Reviews
+        </a>
+        <a href="{{ url_for('admin.pending_vendors') }}"
+          class="sidebar-link {{ 'active' if request.endpoint == 'admin.pending_vendors' }}">
+          <i class="ri-store-2-line"></i> Vendor Approvals
+        </a>
+        {% endif %}
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar"
+            style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            {% if current_user.profile_pic %}
+            <img src="{{ url_for('static', filename=current_user.profile_pic) }}" alt="P"
+              style="width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
+            {{ current_user.username[0]|upper }}
+            {% endif %}
+          </div>
+          <div class="user-info">
+            <div class="user-name">{{ current_user.username }}</div>
+            <div class="user-role">{{ current_user.role }}</div>
+          </div>
+        </div>
+        <a href="{{ url_for('auth.logout') }}" class="logout-btn" title="Logout">
+          <i class="ri-logout-box-r-line"></i>
+        </a>
+      </div>
+    </aside>
+    {% endif %}
+
+    <!-- Main Wrapper -->
+    <main class="{{ 'main-wrapper' if is_portal else 'landing-main' }}">
+      {% if is_portal %}
+      <header class="portal-header">
+        <div class="header-search">
+          <i class="ri-search-line"></i>
+          <input type="text" placeholder="Search transactions, users...">
+        </div>
+        <div class="header-actions">
+          <a href="{{ url_for('main.notifications') }}" class="action-icon">
+            <i class="ri-notification-3-line"></i>
+            {% if current_user.unread_notification_count > 0 %}
+            <span class="badge">{{ current_user.unread_notification_count }}</span>
+            {% endif %}
+          </a>
+          <button id="theme-toggle" class="action-icon"
+            style="border: none; cursor: pointer; color: var(--text-dim); outline: none;">
+            <i class="ri-moon-line" id="theme-toggle-dark-icon" style="display: none;"></i>
+            <i class="ri-sun-line" id="theme-toggle-light-icon" style="display: none;"></i>
+          </button>
+          <a href="{{ url_for('main.settings') }}" class="action-icon">
+            <i class="ri-settings-4-line"></i>
+          </a>
+        </div>
+      </header>
+      {% else %}
+      <nav class="navbar">
+        <div class="container nav-content">
+          <a class="nav-brand" href="{{ url_for('main.index') }}">
+            <img src="{{ url_for('static', filename='img/payonic_logo.png') }}" alt="Payonic Logo">
+            <span class="text-gradient">Payonic</span>
+          </a>
+          <ul class="nav-links">
+            <li><a class="nav-link" href="{{ url_for('main.index') }}">Home</a></li>
+            <li><a class="nav-link" href="#features">Features</a></li>
+            <li><a class="nav-link" href="#guidelines">Guidelines</a></li>
+          </ul>
+          <div class="nav-auth">
+            <button id="theme-toggle" class="action-icon"
+              style="border: none; background: transparent; cursor: pointer; color: var(--text-dim); padding: 0.5rem; outline: none;">
+              <i class="ri-moon-line" id="theme-toggle-dark-icon" style="display: none;"></i>
+              <i class="ri-sun-line" id="theme-toggle-light-icon" style="display: none;"></i>
+            </button>
+            <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+            <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Join Now</a>
+          </div>
+        </div>
+      </nav>
+      {% endif %}
+
+      <div class="{{ 'portal-content' if is_portal else 'container landing-content' }}">
+        <div class="flash-messages">
+          {% with messages = get_flashed_messages() %}
+          {% if messages %}
+          {% for message in messages %}
+          <div class="glass-panel alert animate-fade-in">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <i class="ri-information-line" style="color: var(--primary);"></i>
+              <span>{{ message }}</span>
+            </div>
+            <i class="ri-close-line" onclick="this.parentElement.style.display='none'"
+              style="cursor: pointer; opacity: 0.5;"></i>
+          </div>
+          {% endfor %}
+          {% endif %}
+          {% endwith %}
+        </div>
+
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Navigation -->
+  {% if is_portal %}
+  <nav class="bottom-nav">
+    <a href="{{ url_for('main.dashboard' if current_user.role == 'student' else ('vendor.dashboard' if current_user.role == 'vendor' else 'admin.dashboard')) }}"
+      class="bottom-nav-link {{ 'active' if request.endpoint in ['main.dashboard', 'vendor.dashboard', 'admin.dashboard'] }}">
+      <i class="ri-dashboard-line"></i>
+      <span>Home</span>
+    </a>
+
+    {% if current_user.role == 'student' %}
+    <a href="{{ url_for('main.pay') }}" class="bottom-nav-link {{ 'active' if request.endpoint == 'main.pay' }}">
+      <i class="ri-qr-scan-2-line"></i>
+      <span>Pay</span>
+    </a>
+    <a href="{{ url_for('main.topup') }}" class="bottom-nav-link {{ 'active' if request.endpoint == 'main.topup' }}">
+      <i class="ri-wallet-3-line"></i>
+      <span>Add</span>
+    </a>
+    {% endif %}
+
+    {% if current_user.role == 'vendor' %}
+    <a href="{{ url_for('vendor.generate_qr') }}"
+      class="bottom-nav-link {{ 'active' if request.endpoint == 'vendor.generate_qr' }}">
+      <i class="ri-qr-code-line"></i>
+      <span>QR</span>
+    </a>
+    {% endif %}
+
+    <a href="{{ url_for('main.settings') }}"
+      class="bottom-nav-link {{ 'active' if request.endpoint == 'main.settings' }}">
+      <i class="ri-settings-4-line"></i>
+      <span>Settings</span>
+    </a>
+  </nav>
+  {% endif %}
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- HTML5-QRCode -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+  {% block scripts %}{% endblock %}
+
+  <script>
+    // Theme Switcher Logic
+    const themeToggleButton = document.querySelectorAll('#theme-toggle');
+    const darkIcon = document.querySelectorAll('#theme-toggle-dark-icon');
+    const lightIcon = document.querySelectorAll('#theme-toggle-light-icon');
+
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+
+      if (theme === 'dark') {
+        darkIcon.forEach(i => i.style.display = 'none');
+        lightIcon.forEach(i => i.style.display = 'block');
+      } else {
+        darkIcon.forEach(i => i.style.display = 'block');
+        lightIcon.forEach(i => i.style.display = 'none');
+      }
+    }
+
+    applyTheme(currentTheme);
+
+    themeToggleButton.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        applyTheme(theme);
+      });
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/static/sw.js')
+          .then(reg => console.log('SW Registered!', reg))
+          .catch(err => console.log('SW Reg Failed!', err));
+      });
+    }
+  </script>
+</body>
+
+</html>

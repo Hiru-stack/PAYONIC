@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 0 auto; padding-top: 2rem;">
+    <div style="margin-bottom: 3rem; text-align: center;">
+        <h1 class="text-gradient" style="font-size: 3rem; margin-bottom: 0.5rem;">Wallet Top-ups</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem;">Choose your preferred method to fund your digital
+            wallet.</p>
+    </div>
+
+    <div class="summary-grid mobile-grid-1"
+        style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; align-items: start;">
+        <!-- Scheduled Top-up Configuration -->
+        <div class="glass-panel" style="padding: 2.5rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                <div class="feature-icon-wrapper"
+                    style="color: var(--primary); background: rgba(99, 102, 241, 0.1); margin-bottom: 0;">
+                    <i class="ri-calendar-event-line"></i>
+                </div>
+                <div>
+                    <h2 style="font-size: 1.5rem; margin-bottom: 0.25rem;">Scheduled Top-ups</h2>
+                    <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0;">Automate your wallet funding
+                    </p>
+                </div>
+            </div>
+
+            {% if active_schedule %}
+            <div
+                style="background: {{ 
+                    'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05))' if active_schedule.status == 'approved' 
+                    else 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))' if active_schedule.status == 'pending'
+                    else 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05))'
+                }}; 
+                border: 1px solid {{ 
+                    'rgba(16, 185, 129, 0.2)' if active_schedule.status == 'approved' 
+                    else 'rgba(245, 158, 11, 0.2)' if active_schedule.status == 'pending'
+                    else 'rgba(239, 68, 68, 0.2)'
+                }}; 
+                border-radius: 1.5rem; padding: 2rem; margin-bottom: 2.5rem; text-align: center; position: relative; overflow: hidden;">
+                <div style="position: absolute; top: -20px; right: -20px; font-size: 5rem; color: {{ 
+                        'rgba(16, 185, 129, 0.05)' if active_schedule.status == 'approved' 
+                        else 'rgba(245, 158, 11, 0.05)' if active_schedule.status == 'pending'
+                        else 'rgba(239, 68, 68, 0.05)'
+                    }}; transform: rotate(15deg);">
+                    <i
+                        class="{{ 'ri-checkbox-circle-fill' if active_schedule.status == 'approved' else 'ri-time-line' if active_schedule.status == 'pending' else 'ri-error-warning-fill' }}"></i>
+                </div>
+                <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: {{ 
+                        'var(--success)' if active_schedule.status == 'approved' 
+                        else 'var(--warning)' if active_schedule.status == 'pending'
+                        else 'var(--danger)'
+                    }}; font-weight: 700; margin-bottom: 0.5rem;">
+                    {{ active_schedule.status | capitalize }} Schedule</div>
+                <div style="font-size: 2.5rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;">LKR {{
+                    "{:.2f}".format(active_schedule.amount) }}</div>
+                <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    <span><i class="ri-repeat-line"></i> {{ active_schedule.frequency | capitalize }}</span>
+                    {% if active_schedule.status == 'approved' %}
+                    <span style="margin-left: 1rem;"><i class="ri-calendar-check-line"></i> Next: {{
+                        active_schedule.next_run_date.strftime('%Y-%m-%d') }}</span>
+                    {% endif %}
+                </div>
+
+                {% if active_schedule.status == 'pending' %}
+                <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 1.5rem;">
+                    <i class="ri-information-line"></i> This schedule is waiting for administrative approval.
+                </p>
+                {% elif active_schedule.status == 'rejected' %}
+                <p style="font-size: 0.8rem; color: var(--danger); margin-bottom: 1.5rem;">
+                    <i class="ri-error-warning-line"></i> This schedule was rejected. You can update it to try again.
+                </p>
+                {% endif %}
+
+                <form action="{{ url_for('main.cancel_schedule') }}" method="post">
+                    <button type="submit" class="btn"
+                        style="background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.5rem 1.5rem; border-radius: 1rem; font-weight: 600; font-size: 0.85rem;">
+                        <i class="ri-close-circle-line"></i> Disable Schedule
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            <form action="{{ url_for('main.topup') }}" method="post">
+                <input type="hidden" name="type" value="schedule">
+                <div class="form-group">
+                    <label class="form-label">Top-up Amount (LKR)</label>
+                    <div class="input-icon-wrapper">
+                        <i class="ri-money-dollar-circle-line"></i>
+                        <input type="number" step="0.01" name="amount" class="form-control" placeholder="0.00"
+                            value="{{ active_schedule.amount if active_schedule else '' }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Frequency</label>
+                    <div class="input-icon-wrapper">
+                        <i class="ri-refresh-line"></i>
+                        <select name="frequency" class="form-control" style="appearance: none;">
+                            <option value="monthly" {% if active_schedule and active_schedule.frequency=='monthly'
+                                %}selected{% endif %}>Monthly Cycle</option>
+                            <option value="weekly" {% if active_schedule and active_schedule.frequency=='weekly'
+                                %}selected{% endif %}>Weekly Cycle</option>
+                        </select>
+                        <i class="ri-arrow-down-s-line" style="left: auto; right: 1.25rem;"></i>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <button type="submit" class="btn btn-primary"
+                        style="width: 100%; padding: 1rem; font-size: 1.1rem; border-radius: 1rem;">
+                        <i class="ri-loop-right-line"></i> {{ 'Update Auto-Reload' if active_schedule else 'Enable
+                        Auto-Reload' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Instant Top-up Side Panel -->
+        <div class="glass-panel" style="padding: 2rem; border-color: var(--secondary-glow);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                <div class="feature-icon-wrapper"
+                    style="width: 42px; height: 42px; font-size: 1.25rem; color: var(--secondary); background: rgba(236, 72, 153, 0.1); margin-bottom: 0;">
+                    <i class="ri-flashlight-line"></i>
+                </div>
+                <h3 style="font-size: 1.25rem; margin-bottom: 0;">Instant Add</h3>
+            </div>
+
+            <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1.5rem;">Need funds immediately? Perform
+                a one-time manual recharge.</p>
+
+            <form action="{{ url_for('main.topup') }}" method="post">
+                <input type="hidden" name="type" value="instant">
+                <div class="form-group">
+                    <div class="input-icon-wrapper">
+                        <span
+                            style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--text-muted); font-size: 0.8rem;">LKR</span>
+                        <input type="number" step="0.01" name="amount" class="form-control" placeholder="0.00"
+                            style="padding-left: 4.5rem;" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-outline"
+                    style="width: 100%; padding: 0.85rem; border-radius: 1rem; border-color: var(--secondary-glow); color: var(--secondary);">
+                    Confirm Deposit
+                </button>
+            </form>
+
+            <div style="margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+                <div style="display: flex; gap: 1rem; color: var(--text-dim);">
+                    <i class="ri-secure-payment-line" style="font-size: 2rem; opacity: 0.5;"></i>
+                    <p style="font-size: 0.75rem; line-height: 1.4; margin-bottom: 0;">All transactions are encrypted
+                        and processed through our secure gateway. Funds typically reflect within seconds.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

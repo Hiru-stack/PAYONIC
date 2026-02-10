@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem;">
+        <div>
+            <div
+                style="display: flex; align-items: center; gap: 0.5rem; color: var(--secondary); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">
+                <i class="ri-user-settings-line"></i> IAM Console
+            </div>
+            <h1 class="text-gradient" style="font-size: 2.25rem;">User Management</h1>
+            <p style="color: var(--text-dim);">Administrative control over system access and roles</p>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <div class="glass-panel"
+                style="padding: 0.75rem 1.25rem; border-radius: 1rem; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">
+                <i class="ri-team-line"></i> {{ users|length }} Total Entities
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="glass-panel" style="overflow: hidden; padding: 0;">
+        <!-- Filter Bar -->
+        <div
+            style="padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
+            <div style="display: flex; gap: 2rem;">
+                <div
+                    style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer; color: white; font-weight: 600;">
+                    <i class="ri-checkbox-circle-fill" style="color: var(--success);"></i> Active
+                </div>
+                <div
+                    style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer; color: var(--text-dim); font-weight: 600;">
+                    <i class="ri-time-line"></i> Pending
+                </div>
+                <div
+                    style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer; color: var(--text-dim); font-weight: 600;">
+                    <i class="ri-error-warning-line"></i> Suspended
+                </div>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">
+                Last Sync: Just Now
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="padding-left: 2.5rem;">Profile & ID</th>
+                        <th>Designation</th>
+                        <th>Email Artifact</th>
+                        <th style="text-align: right; padding-right: 2.5rem;">Wallet Liquidity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr style="transition: all 0.2s;" onmouseover="this.style.background='rgba(236, 72, 153, 0.03)'"
+                        onmouseout="this.style.background='transparent'">
+                        <td style="padding-left: 2.5rem;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div
+                                    style="width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);">
+                                    {{ user.username[0]|upper }}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 1rem; color: white;">{{ user.username }}
+                                    </div>
+                                    <div
+                                        style="font-size: 0.75rem; color: var(--text-dim); font-family: monospace; letter-spacing: 0.5px;">
+                                        #{{ "%04d"|format(user.id) }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge-pill" style="
+                                background: {{ 'rgba(99, 102, 241, 0.1)' if user.role == 'student' else ('rgba(236, 72, 153, 0.1)' if user.role == 'vendor' else 'rgba(139, 92, 246, 0.1)') }}; 
+                                color: {{ '#818cf8' if user.role == 'student' else ('#f472b6' if user.role == 'vendor' else '#a78bfa') }};
+                                border: 1px solid {{ 'rgba(99, 102, 241, 0.2)' if user.role == 'student' else ('rgba(236, 72, 153, 0.2)' if user.role == 'vendor' else 'rgba(139, 92, 246, 0.2)') }};
+                                text-transform: uppercase; letter-spacing: 1px;">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td style="color: var(--text-muted); font-size: 0.9rem;">
+                            <i class="ri-at-line" style="opacity: 0.5;"></i> {{ user.email }}
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; color: var(--success);">LKR {{
+                                "{:.2f}".format(user.wallet.balance if user.wallet else 0) }}</div>
+                            <div style="font-size: 0.7rem; color: var(--text-dim);">Live Balance</div>
+                        </td>
+                        <td style="text-align: right; padding-right: 2.5rem;">
+                            {% if user.role == 'vendor' %}
+                            <a href="{{ url_for('admin.audit_vendor', id=user.id) }}" class="btn"
+                                style="background: rgba(99, 102, 241, 0.1); color: var(--primary); border: 1px solid var(--primary-glow); padding: 0.4rem 1rem; font-size: 0.8rem;">
+                                <i class="ri-search-eye-line"></i> Audit
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

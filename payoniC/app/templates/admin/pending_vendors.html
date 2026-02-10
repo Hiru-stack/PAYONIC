@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Header Section -->
+    <div class="mobile-stack"
+        style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+        <div>
+            <div
+                style="display: flex; align-items: center; gap: 0.5rem; color: var(--secondary); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">
+                <i class="ri-store-2-line"></i> Merchant Onboarding
+            </div>
+            <h1 class="text-gradient mobile-text-large" style="font-size: 2.25rem; margin-bottom: 0.5rem;">Vendor
+                Approvals</h1>
+            <p style="color: var(--text-dim); font-size: 0.95rem;">Verify business credentials and authorize merchant
+                access</p>
+        </div>
+        <div class="glass-panel mobile-w-full" style="padding: 0.75rem 1.25rem; border-radius: 1rem;">
+            <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.25rem; text-align: center;">Pending
+                Vendors</div>
+            <div style="font-weight: 700; color: var(--secondary); text-align: center;">{{ vendors|length }}</div>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="glass-panel" style="overflow: hidden; padding: 0;">
+        <div class="table-container">
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="padding-left: 1.5rem;">Business Identity</th>
+                        <th>Segment</th>
+                        <th>Legal Entity</th>
+                        <th class="mobile-hide">Contact Email</th>
+                        <th style="text-align: right; padding-right: 1.5rem;">Executive Decisions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in vendors %}
+                    <tr style="transition: all 0.2s;" onmouseover="this.style.background='rgba(236, 72, 153, 0.03)'"
+                        onmouseout="this.style.background='transparent'">
+                        <td style="padding-left: 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div
+                                    style="width: 36px; height: 36px; border-radius: 10px; background: rgba(236, 72, 153, 0.1); color: var(--secondary); display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0;">
+                                    {{ v.vendor_name[0]|upper if v.vendor_name else v.username[0]|upper }}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 700; color: white; font-size: 0.95rem;">{{ v.vendor_name }}
+                                    </div>
+                                    <div style="font-size: 0.7rem; color: var(--text-dim);">@{{ v.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge-pill"
+                                style="background: rgba(255,255,255,0.05); color: var(--text-main); border: 1px solid var(--border); font-size: 0.75rem; padding: 0.2rem 0.5rem;">
+                                {{ v.business_type }}
+                            </span>
+                        </td>
+                        <td style="color: var(--text-muted); font-size: 0.85rem;">
+                            {{ v.business_name }}
+                        </td>
+                        <td class="mobile-hide" style="color: var(--text-muted); font-size: 0.85rem;">
+                            {{ v.email }}
+                        </td>
+                        <td style="text-align: right; padding-right: 1.5rem;">
+                            <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                                <form action="{{ url_for('admin.approve_vendor', id=v.id) }}" method="post"
+                                    style="display: inline;">
+                                    <button type="submit" class="btn btn-primary"
+                                        style="background: var(--success); padding: 0.5rem 1.25rem; font-size: 0.85rem;">
+                                        Approve
+                                    </button>
+                                </form>
+                                <form action="{{ url_for('admin.reject_vendor', id=v.id) }}" method="post"
+                                    style="display: inline;">
+                                    <button type="submit" class="btn"
+                                        style="background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.5rem 1.25rem; font-size: 0.85rem;">
+                                        Reject
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 6rem 2rem;">
+                            <div style="font-size: 4rem; opacity: 0.1; color: var(--secondary); margin-bottom: 1.5rem;">
+                                <i class="ri-store-pulse-line"></i>
+                            </div>
+                            <h2 style="color: var(--text-dim); font-weight: 800; margin-bottom: 0.5rem;">No Pending
+                                Vendors</h2>
+                            <p style="color: var(--text-muted); font-size: 1.1rem;">All merchant registrations have been
+                                processed.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

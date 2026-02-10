@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade-in portal-content" style="max-width: 1100px; margin: 0 auto; padding-bottom: 5rem;">
+    <!-- Header Hero -->
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+        <div
+            style="display: inline-flex; align-items: center; gap: 0.75rem; background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary-glow); padding: 0.5rem 1.25rem; border-radius: 999px; color: var(--primary); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 1rem;">
+            <i class="ri-refresh-line"></i> Split Bill 2.0
+        </div>
+        <h1 class="text-gradient mobile-text-large"
+            style="font-size: clamp(2rem, 8vw, 3.5rem); margin-bottom: 1rem; font-weight: 800; letter-spacing: -0.02em;">
+            Managed Peer
+            Expense</h1>
+        <p
+            style="color: var(--text-dim); font-size: clamp(0.95rem, 3vw, 1.15rem); max-width: 600px; margin: 0 auto; line-height: 1.6;">
+            Automate your shared financial obligations with elite transparency and automated settlement tracking.</p>
+    </div>
+
+    <!-- Summary Hero Card -->
+    <div class="glass-panel"
+        style="margin-bottom: 2rem; padding: 0; overflow: hidden; border-color: var(--border-bright);">
+        <div class="summary-grid" style="display: grid; align-items: center;">
+            <div class="summary-item" style="padding: 1.5rem; text-align: center;">
+                <div
+                    style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">
+                    Wallet Integrity</div>
+                <div
+                    style="font-size: 1.5rem; font-weight: 800; color: var(--success); display: flex; align-items: baseline; justify-content: center; gap: 0.4rem;">
+                    <span style="font-size: 0.8rem; opacity: 0.7;">LKR</span>
+                    {{ "{:,.2f}".format(current_user.wallet.balance) }}
+                </div>
+            </div>
+            <div class="summary-divider"
+                style="height: 60px; background: var(--border); width: 1px; justify-self: center;"></div>
+            <div class="summary-item" style="padding: 1.5rem; text-align: center;">
+                <div
+                    style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">
+                    Total Payable</div>
+                <div
+                    style="font-size: 1.5rem; font-weight: 800; color: var(--danger); display: flex; align-items: baseline; justify-content: center; gap: 0.4rem;">
+                    <span style="font-size: 0.8rem; opacity: 0.7;">LKR</span>
+                    {{ "{:,.2f}".format(total_you_owe) }}
+                </div>
+            </div>
+            <div class="summary-divider"
+                style="height: 60px; background: var(--border); width: 1px; justify-self: center;"></div>
+            <div class="summary-item" style="padding: 1.5rem; text-align: center;">
+                <div
+                    style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">
+                    Pending Collection</div>
+                <div
+                    style="font-size: 1.5rem; font-weight: 800; color: var(--primary); display: flex; align-items: baseline; justify-content: center; gap: 0.4rem;">
+                    <span style="font-size: 0.8rem; opacity: 0.7;">LKR</span>
+                    {{ "{:,.2f}".format(pending_collection) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interface Controller (Tabs) -->
+    <div
+        style="display: flex; background: rgba(255,255,255,0.03); padding: 0.5rem; border-radius: 1.25rem; margin-bottom: 3rem; border: 1px solid var(--border); max-width: 600px; margin-left: auto; margin-right: auto;">
+        <button onclick="switchTab('launch')" id="tab-launch" class="tab-btn active"
+            style="flex: 1; padding: 0.85rem; border-radius: 0.85rem; border: none; background: transparent; color: var(--text-dim); font-weight: 700; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <i class="ri-rocket-line"></i> Launch Request
+        </button>
+        <button onclick="switchTab('payables')" id="tab-payables" class="tab-btn"
+            style="flex: 1; padding: 0.85rem; border-radius: 0.85rem; border: none; background: transparent; color: var(--text-dim); font-weight: 700; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <i class="ri-wallet-3-line"></i> Invoices <span class="badge"
+                style="background: var(--danger); font-size: 0.65rem; padding: 0.1rem 0.4rem;">{{
+                incoming_requests|length }}</span>
+        </button>
+        <button onclick="switchTab('registry')" id="tab-registry" class="tab-btn"
+            style="flex: 1; padding: 0.85rem; border-radius: 0.85rem; border: none; background: transparent; color: var(--text-dim); font-weight: 700; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <i class="ri-list-check-2"></i> Registry
+        </button>
+    </div>
+
+    <!-- Content Sections -->
+    <div id="section-launch" class="tab-section">
+        <div class="glass-panel" style="max-width: 700px; margin: 0 auto; padding: 4rem;">
+            <h3 style="margin-bottom: 2.5rem; font-weight: 800; font-size: 1.75rem; text-align: center;">Initialize New
+                Split</h3>
+
+            <form action="{{ url_for('main.create_split') }}" method="post">
+                {{ form.hidden_tag() }}
+
+                <div class="form-group" style="margin-bottom: 2.5rem;">
+                    <label class="form-label"
+                        style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Transaction
+                        Narrative</label>
+                    <div class="input-icon-wrapper">
+                        <i class="ri-file-edit-line" style="color: var(--primary);"></i>
+                        {{ form.description(class="form-control", placeholder="e.g. Server Hosting Fees",
+                        style="padding-left: 3.5rem; height: 64px; font-size: 1.1rem; border-radius: 1rem;") }}
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 2.5rem;">
+                    <label class="form-label"
+                        style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Gross Capital
+                        (LKR)</label>
+                    <div class="input-icon-wrapper">
+                        <span
+                            style="position: absolute; left: 1.5rem; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--text-dim);">LKR</span>
+                        {{ form.total_amount(class="form-control", placeholder="0.00", style="padding-left: 5rem;
+                        height: 64px; font-size: 1.1rem; border-radius: 1rem;") }}
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 3.5rem;">
+                    <label class="form-label"
+                        style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                        <span>Participant Entities</span>
+                        <span style="font-size: 0.7rem; color: var(--primary); font-weight: 800;">COMMA SEPARATED</span>
+                    </label>
+                    <div class="input-icon-wrapper">
+                        <i class="ri-team-line" style="color: var(--secondary);"></i>
+                        {{ form.participants(class="form-control", placeholder="john_doe, sarah_k...",
+                        style="padding-left: 3.5rem; height: 64px; font-size: 1.1rem; border-radius: 1rem;") }}
+                    </div>
+                    <small
+                        style="display: block; margin-top: 1rem; color: var(--text-dim); font-size: 0.85rem; line-height: 1.5; padding: 0 0.5rem;">
+                        The total amount will be partitioned evenly between the target usernames.
+                    </small>
+                </div>
+
+                <button type="submit" class="btn btn-primary"
+                    style="width: 100%; padding: 1.4rem; font-size: 1.25rem; border-radius: 1.25rem; font-weight: 800; box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);">
+                    Execute Distribution
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="section-payables" class="tab-section" style="display: none;">
+        <div class="glass-panel" style="padding: 0; overflow: hidden;">
+            <div
+                style="padding: 2rem 3rem; background: rgba(239, 68, 68, 0.05); border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; font-weight: 800; display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="ri-wallet-line" style="color: var(--danger);"></i> Pending Payables
+                </h3>
+            </div>
+
+            <div class="table-container" style="border: none;">
+                <table style="width: 100%;">
+                    <tbody>
+                        {% for p in incoming_requests %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                            <td style="padding: 2.5rem 3rem;">
+                                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                                    <div
+                                        style="width: 48px; height: 48px; border-radius: 1rem; background: rgba(99, 102, 241, 0.1); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.25rem; color: var(--primary);">
+                                        {{ p.bill.creator.username[0]|upper }}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; color: white; font-size: 1.15rem;">{{
+                                            p.bill.description }}</div>
+                                        <div style="font-size: 0.9rem; color: var(--text-dim);">Requested by <span
+                                                style="color: var(--primary);">@{{ p.bill.creator.username }}</span>
+                                            &bull; {{ p.bill.created_at.strftime('%d %b') }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="text-align: right; padding-right: 3rem;">
+                                <div
+                                    style="display: flex; align-items: center; justify-content: flex-end; gap: 2.5rem;">
+                                    <div>
+                                        <div
+                                            style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
+                                            Your Portion</div>
+                                        <div style="font-weight: 800; color: var(--danger); font-size: 1.5rem;">LKR {{
+                                            "{:,.2f}".format(p.amount_owed) }}</div>
+                                    </div>
+                                    <form action="{{ url_for('main.pay_split', id=p.id) }}" method="post">
+                                        <button type="submit" class="btn btn-primary"
+                                            style="padding: 0.75rem 2rem; border-radius: 1rem; font-weight: 800; background: var(--secondary);">
+                                            Settle Now
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td style="text-align: center; padding: 6rem; color: var(--text-dim);">
+                                <i class="ri-checkbox-circle-line"
+                                    style="font-size: 4rem; display: block; margin-bottom: 1.5rem; opacity: 0.2; color: var(--success);"></i>
+                                All operational accounts are current. No pending split obligations.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="section-registry" class="tab-section" style="display: none;">
+        <div class="glass-panel" style="padding: 0; overflow: hidden;">
+            <div
+                style="padding: 2rem 3rem; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; font-weight: 800; display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="ri-draft-line" style="color: var(--primary);"></i> Distribution Registry
+                </h3>
+            </div>
+
+            <div class="table-container" style="border: none; max-height: 600px; overflow-y: auto;">
+                <table style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="padding-left: 3rem;">Narrative & Date</th>
+                            <th>Status Matrix</th>
+                            <th style="text-align: right; padding-right: 3rem;">Total Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bill in my_requests %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                            <td style="padding: 2.5rem 3rem;">
+                                <div
+                                    style="font-weight: 700; color: white; font-size: 1.15rem; margin-bottom: 0.35rem;">
+                                    {{ bill.description }}</div>
+                                <div style="font-size: 0.85rem; color: var(--text-dim);">Initiated {{
+                                    bill.created_at.strftime('%Y-%m-%d') }}</div>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
+                                    {% for p in bill.participants %}
+                                    <div
+                                        style="background: {{ 'rgba(16, 185, 129, 0.1)' if p.status == 'paid' else 'rgba(245, 158, 11, 0.1)' }}; border: 1px solid {{ 'rgba(16, 185, 129, 0.2)' if p.status == 'paid' else 'rgba(245, 158, 11, 0.2)' }}; padding: 0.4rem 0.8rem; border-radius: 0.75rem; font-size: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+                                        <span
+                                            style="width: 8px; height: 8px; border-radius: 50%; background: {{ 'var(--success)' if p.status == 'paid' else 'var(--warning)' }}"></span>
+                                        <span style="font-weight: 700; color: white;">{{ p.user.username }}</span>
+                                        <span style="color: var(--text-dim); opacity: 0.7;">{{ p.status|upper }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td style="text-align: right; padding-right: 3rem;">
+                                <div style="font-weight: 800; color: var(--success); font-size: 1.4rem;">LKR {{
+                                    "{:,.2f}".format(bill.total_amount) }}</div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 6rem; color: var(--text-dim);">
+                                No distribution history found for this entity.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .summary-grid {
+        grid-template-columns: 1fr 1px 1.2fr 1px 1.2fr;
+    }
+
+    @media (max-width: 768px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-divider {
+            width: 80% !important;
+            height: 1px !important;
+        }
+    }
+
+    .tab-btn.active {
+        background: rgba(99, 102, 241, 0.1) !important;
+        color: var(--primary) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .tab-section {
+        animation: slideIn 0.4s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .badge {
+        display: inline-block;
+        min-width: 1.5rem;
+        text-align: center;
+        border-radius: 999px;
+        color: white;
+        margin-left: 0.25rem;
+    }
+</style>
+
+<script>
+    function switchTab(tabId) {
+        // Hide all sections
+        document.querySelectorAll('.tab-section').forEach(s => s.style.display = 'none');
+        // Deactivate all buttons
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('active');
+            b.style.background = 'transparent';
+            b.style.color = 'var(--text-dim)';
+        });
+
+        // Show target section
+        document.getElementById('section-' + tabId).style.display = 'block';
+        // Activate target button
+        const activeBtn = document.getElementById('tab-' + tabId);
+        activeBtn.classList.add('active');
+        activeBtn.style.background = 'rgba(99, 102, 241, 0.1)';
+        activeBtn.style.color = 'var(--primary)';
+    }
+
+    // Set default tab on load if incoming requests exist
+    document.addEventListener('DOMContentLoaded', () => {
+        {% if incoming_requests %}
+        switchTab('payables');
+        {% else %}
+        switchTab('launch');
+        {% endif %}
+    });
+</script>
+{% endblock %}

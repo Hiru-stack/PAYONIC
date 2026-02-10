@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem;">
+        <div>
+            <div
+                style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">
+                <i class="ri-calendar-todo-line"></i> Subscription Management
+            </div>
+            <h1 class="text-gradient" style="font-size: 2.25rem;">Scheduled Top-ups</h1>
+            <p style="color: var(--text-dim);">Authorize recurring wallet recharging requests from students.</p>
+        </div>
+        <div class="glass-panel" style="padding: 0.75rem 1.25rem; border-radius: 1rem;">
+            <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.25rem;">Pending Requests</div>
+            <div style="font-weight: 700; color: var(--primary); text-align: center;">{{ pending_schedules|length }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Requests Section -->
+    <div class="glass-panel" style="margin-bottom: 3rem; overflow: hidden; padding: 0;">
+        <div
+            style="padding: 1.5rem 2.5rem; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02);">
+            <h3 style="margin: 0; font-size: 1.25rem;">Pending Review</h3>
+        </div>
+        <div class="table-container">
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="padding-left: 2.5rem;">Student</th>
+                        <th>Frequency</th>
+                        <th>Amount</th>
+                        <th style="text-align: right; padding-right: 2.5rem;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in pending_schedules %}
+                    <tr>
+                        <td style="padding-left: 2.5rem;">
+                            <div style="font-weight: 700; color: white;">{{ s.user.username }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-dim);">Wallet Bal: LKR {{
+                                "{:.2f}".format(s.user.wallet.balance) }}</div>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="badge-pill"
+                                    style="background: rgba(99, 102, 241, 0.1); color: var(--primary); text-transform: capitalize;">
+                                    {{ s.frequency }}
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 800; color: white; font-size: 1.1rem;">LKR {{
+                                "{:.2f}".format(s.amount) }}</div>
+                        </td>
+                        <td style="text-align: right; padding-right: 2.5rem;">
+                            <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                                <form action="{{ url_for('admin.approve_scheduled_topup', id=s.id) }}" method="post"
+                                    style="display: inline;">
+                                    <button type="submit" class="btn btn-primary"
+                                        style="background: var(--success); padding: 0.5rem 1.25rem; font-size: 0.85rem;">
+                                        Approve
+                                    </button>
+                                </form>
+                                <form action="{{ url_for('admin.reject_scheduled_topup', id=s.id) }}" method="post"
+                                    style="display: inline;">
+                                    <button type="submit" class="btn"
+                                        style="background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.5rem 1.25rem; font-size: 0.85rem;">
+                                        Reject
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 5rem; color: var(--text-dim);">
+                            <i class="ri-checkbox-multiple-line"
+                                style="font-size: 3rem; display: block; margin-bottom: 1rem; opacity: 0.2;"></i>
+                            All scheduled top-up requests have been processed.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Historical Data Section -->
+    <div class="glass-panel" style="overflow: hidden; padding: 0; opacity: 0.8;">
+        <div
+            style="padding: 1.5rem 2.5rem; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.01);">
+            <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-muted);">Processed Schedules</h3>
+        </div>
+        <div class="table-container">
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="padding-left: 2.5rem;">Date</th>
+                        <th>Student</th>
+                        <th>Frequency</th>
+                        <th>Amount</th>
+                        <th style="text-align: right; padding-right: 2.5rem;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in all_schedules if s.status != 'pending' %}
+                    <tr>
+                        <td style="padding-left: 2.5rem; color: var(--text-dim); font-size: 0.85rem;">{{
+                            s.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td style="font-weight: 500;">{{ s.user.username }}</td>
+                        <td style="text-transform: capitalize;">{{ s.frequency }}</td>
+                        <td style="font-weight: 700;">LKR {{ "{:.2f}".format(s.amount) }}</td>
+                        <td style="text-align: right; padding-right: 2.5rem;">
+                            <span class="badge-pill"
+                                style="
+                                    background: {{ 'rgba(16, 185, 129, 0.1)' if s.status == 'approved' else 'rgba(239, 68, 68, 0.1)' }}; 
+                                    color: {{ 'var(--success)' if s.status == 'approved' else 'var(--danger)' }};
+                                    border: 1px solid {{ 'rgba(16, 185, 129, 0.2)' if s.status == 'approved' else 'rgba(239, 68, 68, 0.2)' }};">
+                                {{ s.status|capitalize }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
