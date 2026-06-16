@@ -22,7 +22,9 @@
    ```powershell
    python run.py
    ```
-2. Access at `http://127.0.0.1:5000`
+2. Access at `[http://127.0.0.1:5000](https://payonic-tawny.vercel.app?_vercel_share=5JNCqiRNa6eV1Y2UNr7DkOANIrd2rMwU)`
+
+
 
 ## Features
 - Secure student wallets
@@ -30,3 +32,5 @@
 - Split bill functionality
 - Admin oversight panel
 - Monthly expense analytics
+
+Author - Hirusha Jayasundara
