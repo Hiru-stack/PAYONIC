@@ -22,7 +22,7 @@
    ```powershell
    python run.py
    ```
-2. Access at `[http://127.0.0.1:5000](https://payonic-tawny.vercel.app?_vercel_share=5JNCqiRNa6eV1Y2UNr7DkOANIrd2rMwU)`
+2. Access at https://payonic-tawny.vercel.app?_vercel_share=5JNCqiRNa6eV1Y2UNr7DkOANIrd2rMwU
 
 
 
